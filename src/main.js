@@ -105,7 +105,9 @@ collections.addEventListener('click', event => {
   const button = event.target.closest('[data-collection]')
   if (button) openCollection(Number(button.dataset.collection), button, event.detail !== 0)
 })
-document.querySelectorAll('[data-close-collection]').forEach(button => button.addEventListener('click', () => collectionDialog.close()))
+collectionDialog.addEventListener('click', event => {
+  if (event.target.closest('[data-close-collection]')) collectionDialog.close()
+})
 document.querySelector('#viewer-close').addEventListener('click', () => viewer.close())
 document.querySelector('#viewer-prev').addEventListener('click', () => showPhoto(activePhoto - 1))
 document.querySelector('#viewer-next').addEventListener('click', () => showPhoto(activePhoto + 1))
