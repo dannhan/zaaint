@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>zaaint — photographer</title>
+<meta name="description" content="zaaint, photographer. Light, place and quiet moments.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="is-loading">
+
+<div class="preloader" aria-hidden="true">
+  <span class="preloader__name">zaaint</span>
+  <span class="preloader__count">0</span>
+</div>
+
+<header class="header">
+  <nav class="-container">
+    <div class="-grid">
+      <div class="col-logo"><a class="logo" href="#top">zaaint</a></div>
+      <div class="col-nav"><a href="#presentation">about</a></div>
+      <div class="col-nav"><a href="#contact">contact</a></div>
+      <div class="col-toggle">
+        <button class="toggle" id="toggle" aria-label="Switch view">
+          <span class="toggle__l toggle__l--g">grid</span>
+          <span class="toggle__l toggle__l--l">list</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero -container">
+    <h1 class="hero__title" data-lines>
+      <span class="line"><span>zaaint,</span></span>
+      <span class="line"><span>photographer</span></span>
+    </h1>
+  </section>
+
+  <section class="work" id="work">
+    <div class="-container">
+      <h2 class="work__label" data-lines><span class="line"><span>work</span></span></h2>
+      <ul class="series -grid" id="series"></ul>
+    </div>
+  </section>
+
+  <section class="presentation" id="presentation">
+    <div class="presentation__text -container -grid">
+      <p>Fine-tuned light, quiet places and unhurried frames. I photograph landscapes, architecture and people, mostly on film and mostly early in the morning.</p>
+    </div>
+    <canvas id="gl"></canvas>
+    <h2 class="presentation__title">Light, Place, Time</h2>
+  </section>
+</main>
+
+<footer class="footer" id="contact">
+  <div class="-container -grid">
+    <div class="f-a">
+      <a href="mailto:hello@zaaint.com">hello@zaaint.com</a>
+      <p>based anywhere, shooting everywhere</p>
+    </div>
+    <div class="f-b">
+      <a href="#">instagram</a>
+      <a href="#">behance</a>
+      <a href="#">print shop</a>
+    </div>
+    <p class="f-c">© zaaint</p>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" hidden>
+  <div class="lightbox__bg"></div>
+  <img class="lightbox__img" alt="">
+  <div class="lightbox__bar">
+    <span id="lbTitle"></span>
+    <span id="lbCount"></span>
+  </div>
+  <button class="lightbox__nav lightbox__prev" aria-label="Previous">prev</button>
+  <button class="lightbox__nav lightbox__next" aria-label="Next">next</button>
+</div>
+
+<div class="cursor" id="cursor">view</div>
+
+<script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

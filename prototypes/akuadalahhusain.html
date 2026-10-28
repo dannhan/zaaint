@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joffrey Spitzer | Creative Front-end Developer</title>
+  
+  <!-- Tailwind CSS via CDN for testing -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Config to match your exact grid and colors -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: 'rgb(247, 247, 247)',
+            foreground: 'rgb(26, 26, 26)'
+          },
+          fontFamily: {
+            sans: ['PP Neue Montreal', 'sans-serif'],
+          },
+          gridTemplateColumns: {
+            '4': 'repeat(4, minmax(0, 1fr))',
+            '16': 'repeat(16, minmax(0, 1fr))',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 
+       THE MAGIC SCALING FIX 
+       This makes 1rem relative to the viewport.
+       Since Tailwind uses rem for padding, margins, and text,
+       the ENTIRE site will scale up and down proportionally.
+    */
+    html {
+      font-size: calc(100vw / 375 * 16); 
+      background-color: rgb(247, 247, 247);
+      color: rgb(26, 26, 26);
+    }
+    @media (min-width: 640px) {
+      html { font-size: calc(100vw / 800 * 16); }
+    }
+    @media (min-width: 1024px) {
+      html { font-size: clamp(10px, calc(100vw / 1440 * 16), 24px); }
+    }
+
+    /* Container lock based on your CSS */
+    .custom-container {
+      width: 100%;
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+    }
+  </style>
+</head>
+<body class="antialiased overflow-x-hidden min-h-screen">
+
+  <!-- HEADER -->
+  <header class="absolute sm:fixed top-0 w-full py-[1.25rem] z-50">
+    <nav class="custom-container">
+      <div class="grid grid-cols-4 sm:grid-cols-16 gap-[0.75rem]">
+        <div class="col-span-1 sm:col-span-2">
+          <a href="/" class="text-[0.925rem] sm:text-[0.825rem] font-medium block w-max uppercase leading-tight">
+            zaaint
+          </a>
+        </div>
+        <div class="col-span-3 sm:col-span-4 sm:col-start-11 flex justify-end sm:justify-start">
+          <a href="/about" class="text-[0.925rem] sm:text-[0.825rem] font-medium">About</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section class="pt-[10rem] sm:pt-[25vh] pb-[4rem] sm:pb-[10rem] relative">
+      <!-- Fixed floating text -->
+      <div class="fixed top-[1.25rem] right-[1.25rem] hidden sm:block text-[0.825rem] font-medium text-right z-50">
+        <div>Creative Developer</div>
+        <div>Strasbourg, France</div>
+      </div>
+
+      <div class="custom-container">
+        <!-- Mobile Intro -->
+        <div class="sm:hidden mb-[6.25rem] font-medium text-[2rem] leading-tight">
+          <p>I'm</p>
+          <h1 class="text-[2.5rem]">Joffrey Spitzer, <br> Creative Developer</h1>
+          <p>from Strasbourg, France</p>
+        </div>
+
+        <!-- DESKTOP / PROJECTS GRID -->
+        <div class="grid grid-cols-4 sm:grid-cols-16 gap-[0.75rem] relative">
+          
+          <!-- Sticky "Cases" Title -->
+          <div class="hidden sm:block sm:col-span-3 sticky top-[55vh] h-[45vh] -mt-[30rem]">
+            <h2 class="absolute bottom-[1.25rem] left-0 text-[4.5rem] font-medium leading-none">Cases</h2>
+          </div>
+
+          <!-- Project Images Stream -->
+          <div class="col-span-4 sm:col-span-6 sm:col-start-7 flex flex-col gap-y-[2.5rem] sm:gap-y-[1.5rem]">
+            
+            <!-- Project 1: Showreel -->
+            <div class="relative w-full aspect-video">
+              <img src="/poster-4.webp" alt="Showreel" class="w-full h-full object-cover">
+              <p class="mt-2 text-xl font-medium sm:hidden">Showreel</p>
+            </div>
+
+            <!-- Project 2: Merrell -->
+            <div class="relative w-full sm:w-[17.55vw] aspect-[520/370]">
+              <img src="https://images.prismic.io/joffrey2025/aW97NgIvOtkhBvHJ_gallery-6.webp?auto=format,compress" alt="Merrell" class="w-full h-full object-cover">
+              <p class="mt-2 text-xl font-medium sm:hidden">Merrell</p>
+            </div>
+
+            <!-- Project 3: Aerleum -->
+            <div class="relative w-full sm:w-[17.55vw] aspect-[520/370]">
+              <img src="https://images.prismic.io/joffrey2025/aFL7CbNJEFaPYFFZ_main.png?auto=format,compress" alt="Aerleum" class="w-full h-full object-cover">
+              <p class="mt-2 text-xl font-medium sm:hidden">Aerleum</p>
+            </div>
+
+          </div>
+
+          <!-- Desktop Sticky Titles (Right side) -->
+          <div class="hidden sm:flex col-span-2 sm:col-start-14 relative items-end min-h-full">
+            <div class="sticky bottom-[1.25rem] flex flex-col gap-y-1">
+              <a href="#" class="text-[1rem] font-medium opacity-20 hover:opacity-100 transition-opacity">Showreel</a>
+              <a href="#" class="text-[1rem] font-medium opacity-20 hover:opacity-100 transition-opacity">Merrell</a>
+              <a href="#" class="text-[1rem] font-medium opacity-20 hover:opacity-100 transition-opacity">Aerleum</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div class="border-t border-black/20 mt-[5rem]"></div>
+    <footer class="py-[3rem] custom-container">
+      <div class="grid grid-cols-4 sm:grid-cols-16 gap-[0.75rem] font-medium text-[0.8rem]">
+        <div class="col-span-2 sm:col-span-5 sm:col-start-5">
+          <p class="text-[1.25rem] mb-[2.5rem]">Get in touch</p>
+          <a href="mailto:hello@joffreyspitzer.com" class="block">hello@joffreyspitzer.com</a>
+          <p class="mt-1">Strasbourg, France</p>
+        </div>
+        <div class="col-span-2 sm:col-span-3 sm:col-start-14 flex flex-col gap-y-1">
+          <a href="mailto:hello@joffreyspitzer.com">Mail</a>
+          <a href="#">LinkedIn</a>
+          <a href="#">Instagram</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+</body>
+</html>

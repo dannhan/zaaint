@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171716">
+  <meta name="description" content="A selection of photographs by zaaint.">
+  <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <title>zaaint — photographs</title>
+</head>
+<body>
+  <header class="header" id="top">
+    <a class="brand" href="#top" aria-label="zaaint, home">zaaint<span class="brand-dot">.</span></a>
+    <span class="header-note">INDEPENDENT PHOTOGRAPHY<br>SELECTED WORKS</span>
+    <nav aria-label="Main navigation"><a href="#work">Work <span>↗</span></a><a href="#about">About <span>↗</span></a></nav>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-top mono"><span>PHOTOGRAPHS BY ZAAINT</span><span>AN ONGOING COLLECTION &nbsp; ©</span></div>
+      <div class="hero-image-wrap"><img class="hero-image" src="/photos/3/03.webp" alt="A crowd gathered in the street" fetchpriority="high"><span class="hero-image-number mono">[ FIG. 01 ]</span></div>
+      <div class="hero-title-wrap"><p class="hero-kicker mono">A STUDY OF<br>WHAT'S AROUND US</p><h1 id="hero-title">A little closer<span class="hero-period">.</span></h1><p class="hero-caption mono">PEOPLE / PLACES / MOMENTS<br>SEEN THROUGH THE LENS OF ZAAINT</p></div>
+      <div class="hero-bottom mono"><span>SCROLL TO EXPLORE ↓</span><span>01 — 06</span></div>
+    </section>
+    <section class="intro" id="work">
+      <div class="section-label mono"><span>01 / THE WORK</span><span>SELECTED PHOTOGRAPHS</span></div>
+      <div class="intro-content"><p class="intro-small mono">A COLLECTION OF<br>FRAMES & FEELINGS <span>↘</span></p><h2>Some moments<br>stay with <em>you.</em></h2><p class="intro-copy">A collection of people, places, and everything happening in between. Look a little longer.</p></div>
+    </section>
+    <section class="archive" aria-label="Photographic collections"><div class="archive-heading mono"><span>THE ARCHIVE</span><span>SELECT A COLLECTION ↓</span><span>01 — 06</span></div><div id="collections" class="collections"></div></section>
+    <section class="statement" id="about"><div class="section-label mono"><span>02 / BEHIND THE LENS</span><span>A NOTE FROM THE ARCHIVE</span></div><p class="statement-text">A photograph is a way of <em>paying attention.</em></p><div class="statement-bottom"><span class="asterisk" aria-hidden="true">✳</span><p>Observations, encounters, and the details that make a moment worth keeping.</p><span class="mono">ZA AINT<br>PHOTOGRAPHY</span></div></section>
+  </main>
+  <footer class="footer"><div class="footer-top mono"><span>03 / SAY HELLO</span><span>FOR MORE PHOTOGRAPHS AND INQUIRIES</span></div><a class="footer-link" href="https://www.instagram.com/zaaaint/" target="_blank" rel="noopener noreferrer">Let's connect <span>↗</span></a><div class="footer-bottom mono"><span>© ZAAINT</span><a href="https://www.instagram.com/zaaaint/" target="_blank" rel="noopener noreferrer">INSTAGRAM ↗</a><a href="#top">BACK TO TOP ↑</a></div></footer>
+  <dialog id="collection-dialog" class="collection-dialog" data-lenis-prevent aria-labelledby="collection-title"><div class="dialog-bar mono"><span>ZAAINT / THE ARCHIVE</span><button class="dialog-close" data-close-collection aria-label="Close collection">CLOSE <span>×</span></button></div><div class="collection-dialog-inner"><div class="collection-intro"><p id="collection-number" class="mono"></p><h2 id="collection-title"></h2><p id="collection-count" class="mono"></p></div><div id="photo-grid" class="photo-grid"></div><button class="back-button mono" data-close-collection>← BACK TO THE ARCHIVE</button></div></dialog>
+  <dialog id="viewer" class="viewer" data-lenis-prevent aria-label="Photograph viewer"><div class="viewer-bar mono"><span id="viewer-label"></span><button id="viewer-close" aria-label="Close photograph">CLOSE ×</button></div><div class="viewer-image-wrap"><img id="viewer-image" alt=""></div><div class="viewer-controls mono"><span id="viewer-count"></span><div><button id="viewer-prev" aria-label="Previous photograph">← PREV</button><button id="viewer-next" aria-label="Next photograph">NEXT →</button></div></div></dialog>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

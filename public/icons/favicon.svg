@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#1A1A1A"/>
+  <g fill="#F7F7F7">
+    <rect x="8"  y="26" width="10" height="4"/>
+    <rect x="8"  y="34" width="4"  height="4"/>
+    <rect x="16" y="34" width="4"  height="4"/>
+    <rect x="24" y="26" width="4"  height="4"/>
+    <rect x="34" y="26" width="4"  height="4"/>
+    <rect x="34" y="34" width="4"  height="4"/>
+    <rect x="44" y="26" width="4"  height="4"/>
+    <rect x="54" y="26" width="4"  height="4"/>
+  </g>
+  <!-- morse: Z - - . . / A . - / I . . / N - . -->
+</svg>

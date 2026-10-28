@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>zaaint — {{TITLE}}</title>
+  <meta name="description" content="{{TITLE}} — a photographic series by zaaint." />
+  <meta name="theme-color" content="#F7F7F7" />
+  <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="pre" aria-hidden="true"></div>
+
+  <header>
+    <nav class="grid header-grid" aria-label="Primary">
+      <a class="logo" href="/">zaaint</a>
+      <a class="nv" href="/#work">work</a>
+      <a class="nv" href="/#about">about</a>
+      <a class="nv" href="/#contact">contact</a>
+      <div class="tg-wrap"></div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="sr-head grid">
+      <h1 class="huge">
+        <span class="lm"><span>{{TITLE}}</span></span>
+      </h1>
+      <p class="sr-meta small" data-series-meta></p>
+    </section>
+
+    <section class="sr-body grid" data-series-root="{{ID}}" aria-label="photographs"></section>
+  </main>
+
+  <footer id="contact" class="grid small">
+    <a class="f-mail" href="mailto:hello@zaaint.com">hello@zaaint.com</a>
+    <p class="f-city">jakarta, indonesia<br>available worldwide</p>
+    <nav class="f-soc" aria-label="Social">
+      <a href="https://www.instagram.com/zaaaint/" target="_blank" rel="noopener">instagram</a>
+    </nav>
+    <p class="f-morse" aria-hidden="true">--&#8226;&#8226; &nbsp;&#8226;-&nbsp; &#8226;&#8226; &#8226;-</p>
+    <p class="f-cr">&copy; zaaint</p>
+  </footer>
+
+  <div id="cur" aria-hidden="true">view</div>
+
+  <div id="lightbox" class="lb" role="dialog" aria-modal="true" aria-label="photo viewer" tabindex="-1" hidden>
+    <img id="lbImg" alt="" />
+    <p class="lb-count" id="lbCount">01 / 06</p>
+    <p class="lb-hint">esc to close</p>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
