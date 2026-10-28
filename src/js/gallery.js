@@ -23,7 +23,6 @@ export function createGallery(root, { group, reduced, onOpen }) {
   let disposed = false
   let lastCardWidth = 0
   let lastCardHeight = 0
-  let lastStageHeight = 0
   let lastLayout = ''
   root.innerHTML = `
     <div class="gallery-toolbar">
@@ -44,15 +43,21 @@ export function createGallery(root, { group, reduced, onOpen }) {
   function render(animate = true) {
     if (disposed) return
     const flat = arrangement === 'grid' || reduced.matches
+    const wasFlat = root.dataset.arrangement === 'grid'
     root.dataset.arrangement = flat ? 'grid' : arrangement
+    if (flat !== wasFlat) scrollContainer.scrollTop = 0
+    if (!flat) stage.style.removeProperty('height')
     const width = stage.clientWidth
     const columns = width < 600 ? 2 : width < 1000 ? 3 : 4
     const gap = width < 600 ? 14 : 28
-    const cardWidth = flat ? (width - gap * (columns - 1)) / columns : Math.min(width * 0.57, 330)
-    const cardHeight = cardWidth * 1.25
-    const height = flat ? Math.ceil(cards.length / columns) * (cardHeight + 38) : Math.max(cardHeight + 80, Math.min(window.innerHeight * 0.65, 760))
+    const photo = group.photos[active]
+    const ratio = flat ? 0.8 : photo.width / photo.height
+    const availableImageHeight = Math.max(1, stage.clientHeight - 57)
+    const cardWidth = flat ? (width - gap * (columns - 1)) / columns : Math.min(width * (width < 600 ? 0.88 : 0.72), availableImageHeight * ratio)
+    const cardHeight = cardWidth / ratio
+    const height = flat ? Math.ceil(cards.length / columns) * (cardHeight + 38) : stage.clientHeight
     const sizeChanged = cardWidth !== lastCardWidth || cardHeight !== lastCardHeight
-    if (height !== lastStageHeight) stage.style.height = `${height}px`
+    if (flat && stage.style.height !== `${height}px`) stage.style.height = `${height}px`
     const layoutKey = `${arrangement}:${flat}:${active}`
     if (layoutKey !== lastLayout) {
       root.querySelectorAll('button[data-arrangement]').forEach(button => {
@@ -82,7 +87,7 @@ export function createGallery(root, { group, reduced, onOpen }) {
     cards.forEach((card, i) => {
       const distance = i - active + (flat ? 0 : dragDistance / (cardWidth + gap))
       let x = width / 2 - cardWidth / 2
-      let y = (height - cardHeight) / 2
+      let y = (height - cardHeight - 25) / 2
       let z = 0
       let rotationY = 0
       let scale = 1
@@ -153,7 +158,6 @@ export function createGallery(root, { group, reduced, onOpen }) {
     })
     lastCardWidth = cardWidth
     lastCardHeight = cardHeight
-    lastStageHeight = height
   }
   function step(direction, animate = true) {
     active = Math.max(0, Math.min(cards.length - 1, active + direction))
