@@ -176,7 +176,7 @@ export function createGallery(root, { group, reduced, onOpen }) {
     if (arrangement !== 'grid' && !reduced.matches && active !== index) {
       active = index
       render(event.detail !== 0)
-    } else onOpen(index)
+    } else onOpen(index, event.detail !== 0)
   }
   function onKeydown(event) {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
@@ -234,6 +234,13 @@ export function createGallery(root, { group, reduced, onOpen }) {
   render(false)
   return {
     getActiveImage() { return cards[active].querySelector('img') },
+    getImage(index) { return cards[index].querySelector('img') },
+    reveal(index) {
+      active = index
+      render(false)
+      if (arrangement === 'grid' || reduced.matches) cards[index].scrollIntoView({ block: 'nearest', behavior: 'instant' })
+      return cards[index].querySelector('img')
+    },
     destroy() {
       disposed = true
       observer.kill()

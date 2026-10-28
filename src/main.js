@@ -4,6 +4,7 @@ import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { createGallery } from './js/gallery.js'
+import { createTransitions } from './js/transitions.js'
 
 gsap.registerPlugin(ScrollTrigger)
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -25,6 +26,8 @@ let activePhoto = 0
 let lenis
 let gallery = null
 let collectionTransition = null
+let collectionOpener = null
+const transitions = createTransitions({ collectionDialog, viewer, viewerImage, reduced })
 
 collections.innerHTML = groups.map((group, i) => {
   const cover = group.photos.find(photo => photo.original === group.cover) || group.photos[0]
@@ -38,6 +41,10 @@ collections.innerHTML = groups.map((group, i) => {
 }).join('')
 
 function openCollection(index, button, animateEntry) {
+  transitions.finish()
+  collectionTransition?.progress(1)
+  collectionOpener = button
+  window.scrollTo({ left: scrollX, top: scrollY, behavior: 'instant' })
   const sourceImage = button.querySelector('.collection-image img')
   const sourceRect = sourceImage.getBoundingClientRect()
   activeGroup = groups[index]
@@ -50,7 +57,12 @@ function openCollection(index, button, animateEntry) {
   gallery = createGallery(document.querySelector('#photo-grid'), {
     group: activeGroup,
     reduced,
-    onOpen: index => { showPhoto(index); viewer.showModal() },
+    onOpen: (index, animate) => {
+      transitions.finish()
+      collectionTransition?.progress(1)
+      showPhoto(index)
+      transitions.openPhoto(gallery.getImage(index), animate)
+    },
   })
   if (animateEntry && !reduced.matches) {
     animateCollection(sourceImage, sourceRect)
@@ -96,30 +108,51 @@ function showPhoto(index) {
   activePhoto = (index + activeGroup.photos.length) % activeGroup.photos.length
   const photo = activeGroup.photos[activePhoto]
   viewerImage.src = photo.src
+  viewerImage.width = photo.width
+  viewerImage.height = photo.height
   viewerImage.alt = `Photograph ${activePhoto + 1} from ${activeGroup.title}`
   document.querySelector('#viewer-label').textContent = activeGroup.title.toUpperCase()
   document.querySelector('#viewer-count').textContent = `${String(activePhoto + 1).padStart(2, '0')} / ${String(activeGroup.photos.length).padStart(2, '0')}`
+}
+function closeViewer(animate) {
+  transitions.finish()
+  if (!viewer.open) return
+  transitions.closePhoto(gallery.reveal(activePhoto), animate)
+}
+function closeCollection(animate) {
+  transitions.finish()
+  collectionTransition?.progress(1)
+  if (!collectionDialog.open) return
+  gsap.getTweensOf([collectionOpener.closest('.collection'), collectionOpener.querySelector('.collection-image-inner')]).forEach(tween => tween.progress(1))
+  transitions.closeCollection(gallery.getActiveImage(), collectionOpener.querySelector('.collection-image img'), animate)
+}
+function navigatePhoto(direction) {
+  transitions.finish()
+  if (viewer.open) showPhoto(activePhoto + direction)
 }
 collections.addEventListener('click', event => {
   const button = event.target.closest('[data-collection]')
   if (button) openCollection(Number(button.dataset.collection), button, event.detail !== 0)
 })
 collectionDialog.addEventListener('click', event => {
-  if (event.target.closest('[data-close-collection]')) collectionDialog.close()
+  if (event.target.closest('[data-close-collection]')) closeCollection(event.detail !== 0)
 })
-document.querySelector('#viewer-close').addEventListener('click', () => viewer.close())
-document.querySelector('#viewer-prev').addEventListener('click', () => showPhoto(activePhoto - 1))
-document.querySelector('#viewer-next').addEventListener('click', () => showPhoto(activePhoto + 1))
+document.querySelector('#viewer-close').addEventListener('click', event => closeViewer(event.detail !== 0))
+document.querySelector('#viewer-prev').addEventListener('click', () => navigatePhoto(-1))
+document.querySelector('#viewer-next').addEventListener('click', () => navigatePhoto(1))
+viewer.addEventListener('cancel', event => { event.preventDefault(); closeViewer(false) })
+collectionDialog.addEventListener('cancel', event => { event.preventDefault(); closeCollection(false) })
 collectionDialog.addEventListener('close', () => {
   if (collectionDialog.open) return
   collectionTransition?.kill()
+  if (viewer.open) viewer.close()
   gallery?.destroy()
   gallery = null
   lenis?.start()
 })
 viewer.addEventListener('keydown', event => {
-  if (event.key === 'ArrowLeft') showPhoto(activePhoto - 1)
-  if (event.key === 'ArrowRight') showPhoto(activePhoto + 1)
+  if (event.key === 'ArrowLeft') { event.preventDefault(); navigatePhoto(-1) }
+  if (event.key === 'ArrowRight') { event.preventDefault(); navigatePhoto(1) }
 })
 
 if (!reduced.matches) {

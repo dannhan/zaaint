@@ -15,8 +15,11 @@
 .collection-5 .collection-image img { aspect-ratio: auto; height: auto; object-fit: contain; }
 .collection-dialog::backdrop { background: transparent; }
 .collection-dialog.is-entering { background: transparent; }
+.collection-dialog.is-leaving { background: transparent; }
 .collection-dialog.is-entering .collection-dialog-inner,
-.collection-dialog.is-entering .dialog-bar { position: relative; z-index: 1; }
+.collection-dialog.is-entering .dialog-bar,
+.collection-dialog.is-leaving .collection-dialog-inner,
+.collection-dialog.is-leaving .dialog-bar { position: relative; z-index: 1; }
 .transition-paper { position: fixed; inset: 0; background: #fff; z-index: 0; pointer-events: none; }
 .transition-image { position: fixed; z-index: 5; max-width: none; object-fit: contain; transform-origin: left top; pointer-events: none; }
 .collection-gallery { flex: 1; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
@@ -64,3 +67,9 @@
 }
 .gallery-layouts button:disabled,
 .gallery-navigation button:disabled { opacity: 0.35; cursor: default; }
+.viewer, .viewer::backdrop { background: transparent; }
+.viewer-surface { position: fixed; inset: 0; background: #000; pointer-events: none; }
+.viewer .viewer-bar { position: relative; z-index: 2; background: transparent; }
+.viewer-image-wrap { position: relative; z-index: 1; }
+.viewer-image-wrap img { width: 100%; height: 100%; transform-origin: center; }
+.viewer-controls { position: relative; z-index: 2; }
