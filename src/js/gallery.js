@@ -1,0 +1,203 @@
+import '../styles/gallery.css'
+import gsap from 'gsap'
+import { Observer } from 'gsap/Observer'
+
+gsap.registerPlugin(Observer)
+
+const arrangements = ['grid', 'row', 'coverflow', 'barrel', 'helix', 'sphere']
+
+function spherePoint(index, count) {
+  const y = 1 - 2 * (index + 0.5) / count
+  const radius = Math.sqrt(1 - y * y)
+  const angle = index * Math.PI * (3 - Math.sqrt(5))
+  return { x: Math.cos(angle) * radius, y, z: Math.sin(angle) * radius }
+}
+
+export function createGallery(root, { group, reduced, onOpen }) {
+  let arrangement = group.arrangement
+  let active = group.photos.findIndex(photo => photo.original === group.cover)
+  if (active < 0) active = 0
+  let dragDistance = 0
+  let suppressClick = false
+  let disposed = false
+  root.innerHTML = `
+    <div class="gallery-toolbar">
+      <p class="mono">${group.type} / ${group.number}</p>
+      <div class="gallery-layouts" role="group" aria-label="Gallery arrangement">${arrangements.map(name => `<button type="button" class="mono" data-arrangement="${name}" aria-pressed="${name === arrangement}">${name}</button>`).join('')}</div>
+    </div>
+    <div class="gallery-stage" tabindex="0" role="region" aria-label="${group.title} photographs. Use arrow keys to browse.">
+      ${group.photos.map((photo, i) => `<button type="button" class="gallery-photo" data-gallery-photo="${i}" aria-label="Open photograph ${i + 1} of ${group.photos.length}"><img src="${photo.src}" width="${photo.width}" height="${photo.height}" alt="" decoding="async" loading="${i < 4 || Math.abs(i - active) < 3 ? 'eager' : 'lazy'}"><span class="mono">${String(i + 1).padStart(2, '0')} / ${group.number}</span></button>`).join('')}
+    </div>
+    <div class="gallery-footer mono"><span class="gallery-hint"></span><span class="gallery-position" role="status" aria-live="polite"></span><div class="gallery-navigation"><button type="button" data-step="-1" aria-label="Previous photograph">←</button><button type="button" data-step="1" aria-label="Next photograph">→</button></div></div>`
+
+  const stage = root.querySelector('.gallery-stage')
+  const cards = [...root.querySelectorAll('.gallery-photo')]
+  const position = root.querySelector('.gallery-position')
+  const hint = root.querySelector('.gallery-hint')
+
+  function render(animate = true) {
+    if (disposed) return
+    const flat = arrangement === 'grid' || reduced.matches
+    root.dataset.arrangement = flat ? 'grid' : arrangement
+    const width = stage.clientWidth
+    const columns = width < 600 ? 2 : width < 1000 ? 3 : 4
+    const gap = width < 600 ? 14 : 28
+    const cardWidth = flat ? (width - gap * (columns - 1)) / columns : Math.min(width * 0.57, 330)
+    const cardHeight = cardWidth * 1.25
+    const height = flat ? Math.ceil(cards.length / columns) * (cardHeight + 38) : Math.max(cardHeight + 80, Math.min(window.innerHeight * 0.65, 760))
+    stage.style.height = `${height}px`
+    root.querySelectorAll('button[data-arrangement]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.arrangement === (flat ? 'grid' : arrangement)))
+      button.disabled = reduced.matches && button.dataset.arrangement !== 'grid'
+    })
+    root.querySelector('.gallery-navigation').hidden = flat
+    root.querySelector('[data-step="-1"]').disabled = active === 0
+    root.querySelector('[data-step="1"]').disabled = active === cards.length - 1
+    position.textContent = flat ? `${cards.length} PHOTOGRAPHS` : `${String(active + 1).padStart(2, '0')} / ${String(cards.length).padStart(2, '0')}`
+    hint.textContent = flat ? 'SELECT A PHOTOGRAPH TO VIEW' : 'DRAG TO EXPLORE / SELECT TO VIEW'
+    const focus = spherePoint(active, cards.length)
+    const yaw = Math.atan2(focus.x, focus.z)
+    const pitch = Math.atan2(focus.y, Math.hypot(focus.x, focus.z))
+    cards.forEach((card, i) => {
+      const distance = i - active + (flat ? 0 : dragDistance / (cardWidth + gap))
+      let x = width / 2 - cardWidth / 2
+      let y = (height - cardHeight) / 2
+      let z = 0
+      let rotationY = 0
+      let scale = 1
+      let opacity = 1
+      if (flat) {
+        x = (i % columns) * (cardWidth + gap)
+        y = Math.floor(i / columns) * (cardHeight + 38)
+      } else if (arrangement === 'row') {
+        x += distance * (cardWidth + gap)
+        scale = distance === 0 ? 1 : 0.92
+        opacity = Math.abs(distance) > 2 ? 0 : 1
+      } else if (arrangement === 'coverflow') {
+        x += Math.sign(distance) * Math.min(Math.abs(distance), 5) * cardWidth * 0.58
+        z = -Math.abs(distance) * cardWidth * 0.45
+        rotationY = distance === 0 ? 0 : Math.sign(distance) * -48
+        opacity = Math.abs(distance) > 4 ? 0 : 1
+      } else if (arrangement === 'barrel') {
+        const angle = distance * 0.48
+        const radius = Math.min(width * 0.7, 680)
+        x += Math.sin(angle) * radius
+        z = (Math.cos(angle) - 1) * radius
+        rotationY = -distance * 27.5
+        opacity = Math.abs(distance) > 3 ? 0 : 1
+      } else if (arrangement === 'helix') {
+        const angle = distance * 0.85
+        const radius = Math.min(width * 0.58, 600)
+        x += Math.sin(angle) * radius
+        y += distance * cardHeight * 0.22
+        z = (Math.cos(angle) - 1) * radius * 0.8
+        rotationY = -Math.sin(angle) * 35
+        scale = 0.65 + 0.35 * Math.exp(-Math.abs(distance))
+        opacity = Math.abs(distance) > 5 ? 0 : 1
+      } else if (arrangement === 'sphere') {
+        const point = spherePoint(i, cards.length)
+        const side = point.x * Math.cos(yaw) - point.z * Math.sin(yaw)
+        const depth = point.x * Math.sin(yaw) + point.z * Math.cos(yaw)
+        const vertical = point.y * Math.cos(pitch) - depth * Math.sin(pitch)
+        const forward = point.y * Math.sin(pitch) + depth * Math.cos(pitch)
+        const dragAngle = dragDistance / (cardWidth + gap) * 0.65
+        const horizontal = side * Math.cos(dragAngle) + forward * Math.sin(dragAngle)
+        const front = -side * Math.sin(dragAngle) + forward * Math.cos(dragAngle)
+        x += horizontal * Math.min(width * 0.46, 580)
+        y -= vertical * height * 0.36
+        z = (front - 1) * Math.min(width * 0.5, 500)
+        scale = 0.36 + 0.64 * Math.pow(Math.max(0, front), 5)
+        opacity = 0.3 + 0.7 * Math.max(0, front)
+      }
+      const previousWidth = card.offsetWidth
+      const previousHeight = card.offsetHeight
+      const previousScaleX = gsap.getProperty(card, 'scaleX')
+      const previousScaleY = gsap.getProperty(card, 'scaleY')
+      card.style.width = `${cardWidth}px`
+      card.style.height = `${cardHeight + 25}px`
+      if (animate && !reduced.matches && previousWidth > 0 && previousWidth !== cardWidth) {
+        gsap.set(card, { scaleX: previousScaleX * previousWidth / cardWidth, scaleY: previousScaleY * previousHeight / (cardHeight + 25) })
+      }
+      card.style.zIndex = String(Math.round(1000 + z - Math.abs(distance)))
+      card.tabIndex = flat || i === active ? 0 : -1
+      card.inert = opacity === 0
+      gsap.to(card, {
+        transform: `translate3d(${x}px, ${y}px, ${z}px) rotateY(${rotationY}deg) scale(${scale})`,
+        opacity,
+        duration: animate && !reduced.matches ? 0.65 : 0,
+        ease: 'power3.out',
+        overwrite: true,
+      })
+    })
+  }
+  function step(direction, animate = true) {
+    active = Math.max(0, Math.min(cards.length - 1, active + direction))
+    render(animate)
+  }
+  function onClick(event) {
+    const layoutButton = event.target.closest('button[data-arrangement]')
+    if (layoutButton) {
+      arrangement = layoutButton.dataset.arrangement
+      render(event.detail !== 0)
+      return
+    }
+    const stepButton = event.target.closest('[data-step]')
+    if (stepButton) { step(Number(stepButton.dataset.step), event.detail !== 0); return }
+    const photo = event.target.closest('[data-gallery-photo]')
+    if (!photo || (suppressClick && event.detail !== 0)) return
+    const index = Number(photo.dataset.galleryPhoto)
+    if (arrangement !== 'grid' && !reduced.matches && active !== index) {
+      active = index
+      render(event.detail !== 0)
+    } else onOpen(index)
+  }
+  function onKeydown(event) {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+    event.preventDefault()
+    if (event.key === 'Home') active = 0
+    else if (event.key === 'End') active = cards.length - 1
+    else active = Math.max(0, Math.min(cards.length - 1, active + (event.key === 'ArrowRight' ? 1 : -1)))
+    render(false)
+    cards[active].focus({ preventScroll: true })
+    if (arrangement === 'grid' || reduced.matches) cards[active].scrollIntoView({ block: 'nearest' })
+  }
+  root.addEventListener('click', onClick)
+  stage.addEventListener('keydown', onKeydown)
+  const observer = Observer.create({
+    target: stage,
+    type: 'pointer,touch',
+    dragMinimum: 8,
+    lockAxis: true,
+    onPress: () => { dragDistance = 0; suppressClick = false },
+    onDrag: self => {
+      if (arrangement !== 'grid' && !reduced.matches && self.axis === 'x') {
+        dragDistance += self.deltaX
+        render(false)
+      }
+    },
+    onRelease: () => {
+      const distance = dragDistance
+      dragDistance = 0
+      suppressClick = Math.abs(distance) > 8
+      if (Math.abs(distance) > 30) step(distance < 0 ? 1 : -1)
+      else render()
+    },
+  })
+  const resize = new ResizeObserver(() => render(false))
+  resize.observe(stage)
+  reduced.addEventListener('change', onReducedChange)
+  function onReducedChange() { render(false) }
+  render(false)
+  return {
+    getActiveImage() { return cards[active].querySelector('img') },
+    destroy() {
+      disposed = true
+      observer.kill()
+      resize.disconnect()
+      reduced.removeEventListener('change', onReducedChange)
+      gsap.killTweensOf(cards)
+      root.removeEventListener('click', onClick)
+      stage.removeEventListener('keydown', onKeydown)
+    },
+  }
+}
