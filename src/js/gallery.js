@@ -25,14 +25,15 @@ export function createGallery(root, { group, reduced, onOpen }) {
   let lastCardHeight = 0
   let lastStageHeight = 0
   let lastLayout = ''
-  let geometryKey = ''
-  let stageSpace = 0
   root.innerHTML = `
-    <div class="gallery-info mono"><span class="gallery-hint"></span><span class="gallery-position" role="status" aria-live="polite"></span><div class="gallery-navigation"><button type="button" data-step="-1" aria-label="Previous photograph">←</button><button type="button" data-step="1" aria-label="Next photograph">→</button></div></div>
+    <div class="gallery-toolbar">
+      <p class="mono">${group.type} / ${group.number}</p>
+      <div class="gallery-layouts" role="group" aria-label="Gallery arrangement">${arrangements.map(name => `<button type="button" class="mono" data-arrangement="${name}" aria-pressed="${name === arrangement}">${name}</button>`).join('')}</div>
+    </div>
     <div class="gallery-stage" tabindex="0" role="region" aria-label="${group.title} photographs. Use arrow keys to browse.">
       ${group.photos.map((photo, i) => `<button type="button" class="gallery-photo" data-gallery-photo="${i}" aria-label="Open photograph ${i + 1} of ${group.photos.length}"><img draggable="false" src="${photo.src}" width="${photo.width}" height="${photo.height}" alt="" decoding="async" loading="${i < 4 || Math.abs(i - active) < 3 ? 'eager' : 'lazy'}"><span class="mono">${String(i + 1).padStart(2, '0')} / ${group.number}</span></button>`).join('')}
     </div>
-    <div class="gallery-footer"><button type="button" class="back-button mono" data-close-collection>← BACK <span>TO THE ARCHIVE</span></button><div class="gallery-layouts" role="group" aria-label="Gallery arrangement">${arrangements.map(name => `<button type="button" class="mono" data-arrangement="${name}" aria-pressed="${name === arrangement}">${name}</button>`).join('')}</div></div>`
+    <div class="gallery-footer mono"><span class="gallery-hint"></span><span class="gallery-position" role="status" aria-live="polite"></span><div class="gallery-navigation"><button type="button" data-step="-1" aria-label="Previous photograph">←</button><button type="button" data-step="1" aria-label="Next photograph">→</button></div></div>`
 
   const stage = root.querySelector('.gallery-stage')
   const scrollContainer = root.closest('dialog')
@@ -47,15 +48,9 @@ export function createGallery(root, { group, reduced, onOpen }) {
     const width = stage.clientWidth
     const columns = width < 600 ? 2 : width < 1000 ? 3 : 4
     const gap = width < 600 ? 14 : 28
-    const nextGeometryKey = `${width}:${scrollContainer.clientHeight}:${flat}`
-    if (geometryKey !== nextGeometryKey) {
-      const stageTop = stage.getBoundingClientRect().top - scrollContainer.getBoundingClientRect().top + scrollContainer.scrollTop
-      stageSpace = Math.max(220, scrollContainer.clientHeight - stageTop - 8)
-      geometryKey = nextGeometryKey
-    }
-    const cardWidth = flat ? (width - gap * (columns - 1)) / columns : Math.min(width * 0.7, 600, Math.max(140, (stageSpace - 40) / 1.25))
+    const cardWidth = flat ? (width - gap * (columns - 1)) / columns : Math.min(width * 0.57, 330)
     const cardHeight = cardWidth * 1.25
-    const height = flat ? Math.ceil(cards.length / columns) * (cardHeight + 38) : Math.max(cardHeight + 30, stageSpace)
+    const height = flat ? Math.ceil(cards.length / columns) * (cardHeight + 38) : Math.max(cardHeight + 80, Math.min(window.innerHeight * 0.65, 760))
     const sizeChanged = cardWidth !== lastCardWidth || cardHeight !== lastCardHeight
     if (height !== lastStageHeight) stage.style.height = `${height}px`
     const layoutKey = `${arrangement}:${flat}:${active}`
