@@ -29,7 +29,7 @@ function clip(rect) {
   return `inset(${Math.max(0, rect.top)}px ${Math.max(0, innerWidth - rect.left - rect.width)}px ${Math.max(0, innerHeight - rect.top - rect.height)}px ${Math.max(0, rect.left)}px)`
 }
 
-export function createTransitions({ collectionDialog, viewer, viewerImage, reduced }) {
+export function createTransitions({ collectionDialog, viewer, reduced }) {
   let pending = null
   const surface = viewer.querySelector('.viewer-surface')
   const chrome = [viewer.querySelector('.viewer-bar'), viewer.querySelector('.viewer-controls')]
@@ -52,6 +52,7 @@ export function createTransitions({ collectionDialog, viewer, viewerImage, reduc
   }
 
   function clearViewer() {
+    const viewerImage = viewer.querySelector('#viewer-image')
     gsap.set([viewerImage, surface, ...chrome], { clearProps: 'transform,opacity,transformOrigin' })
   }
 
@@ -80,6 +81,7 @@ export function createTransitions({ collectionDialog, viewer, viewerImage, reduc
     finish,
     openPhoto(source, animate) {
       finish()
+      const viewerImage = viewer.querySelector('#viewer-image')
       const from = photoRect(source)
       viewer.showModal()
       if (!animate || reduced.matches || !visible(from)) return
@@ -98,6 +100,7 @@ export function createTransitions({ collectionDialog, viewer, viewerImage, reduc
     closePhoto(destination, animate) {
       finish()
       if (!viewer.open) return
+      const viewerImage = viewer.querySelector('#viewer-image')
       const from = photoRect(viewerImage)
       const target = photoRect(destination)
       const close = () => {
@@ -144,7 +147,7 @@ export function createTransitions({ collectionDialog, viewer, viewerImage, reduc
       paper.className = 'transition-paper'
       paper.setAttribute('aria-hidden', 'true')
       collectionDialog.append(paper)
-      const samePhoto = source.currentSrc === destination.currentSrc
+      const samePhoto = source.getAttribute('src') === destination.getAttribute('src')
       const outgoing = sourceVisible ? clone(source, from) : null
       const incoming = samePhoto && outgoing ? null : clone(destination, coverStart)
       const sourceVisibility = source.style.visibility

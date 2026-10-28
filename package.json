@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Zaaint portfolio website",
   "scripts": {
+    "prepare:gallery": "node scripts/prepare-gallery-images.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

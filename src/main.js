@@ -14,20 +14,22 @@ const groups = [
   { title: 'In the streets', arrangement: 'helix', type: 'DOCUMENTARY', cover: '993bsi5pyd3x.jpg', description: 'Scenes from a crowd in motion.' },
   { title: 'A portrait', arrangement: 'coverflow', type: 'PORTRAIT', cover: 'DZSNIX5D6-T.jpg', description: 'A person, a place, a moment.' },
   { title: 'Elsewhere', arrangement: 'grid', type: 'PLACES', cover: 'DZH8U73iRxa-3.jpg', description: 'A collection of places and small things.' },
-  { title: 'After dark', arrangement: 'barrel', type: 'LIVE MUSIC', cover: 'DSDL53pEmWl-13.jpg', description: 'On stage, in the light.' },
+  { title: 'After dark', arrangement: 'coverflow', type: 'LIVE MUSIC', cover: 'DSDL53pEmWl-13.jpg', description: 'On stage, in the light.' },
 ].map((group, i) => ({ ...group, photos: photos[i], number: String(i + 1).padStart(2, '0') }))
 
 const collections = document.querySelector('#collections')
 const collectionDialog = document.querySelector('#collection-dialog')
 const viewer = document.querySelector('#viewer')
-const viewerImage = document.querySelector('#viewer-image')
+let viewerImage = document.querySelector('#viewer-image')
 let activeGroup = null
 let activePhoto = 0
+let requestedPhoto = 0
+let photoRequest = 0
 let lenis
 let gallery = null
 let collectionTransition = null
 let collectionOpener = null
-const transitions = createTransitions({ collectionDialog, viewer, viewerImage, reduced })
+const transitions = createTransitions({ collectionDialog, viewer, reduced })
 
 collections.innerHTML = groups.map((group, i) => {
   const cover = group.photos.find(photo => photo.original === group.cover) || group.photos[0]
@@ -41,6 +43,7 @@ collections.innerHTML = groups.map((group, i) => {
 }).join('')
 
 function openCollection(index, button, animateEntry) {
+  photoRequest++
   transitions.finish()
   collectionTransition?.progress(1)
   collectionOpener = button
@@ -57,11 +60,13 @@ function openCollection(index, button, animateEntry) {
   gallery = createGallery(document.querySelector('#photo-grid'), {
     group: activeGroup,
     reduced,
-    onOpen: (index, animate) => {
+    onOpen: async (index, animate) => {
       transitions.finish()
       collectionTransition?.progress(1)
-      showPhoto(index)
-      transitions.openPhoto(gallery.getImage(index), animate)
+      const source = gallery.getImage(index)
+      if (await showPhoto(index, source.currentSrc || source.src)) {
+        transitions.openPhoto(source, animate)
+      }
     },
   })
   if (animateEntry && !reduced.matches) {
@@ -104,22 +109,50 @@ function animateCollection(sourceImage, sourceRect) {
     .to(image, { x: target.left - sourceRect.left, y: target.top - sourceRect.top, scaleX: target.width / sourceRect.width, scaleY: target.height / sourceRect.height, duration: 0.75, ease: 'power3.inOut' }, 0)
     .fromTo([bar, content], { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.06, ease: 'power3.out' }, 0.3)
 }
-function showPhoto(index) {
-  activePhoto = (index + activeGroup.photos.length) % activeGroup.photos.length
-  const photo = activeGroup.photos[activePhoto]
-  viewerImage.src = photo.src
-  viewerImage.width = photo.width
-  viewerImage.height = photo.height
-  viewerImage.alt = `Photograph ${activePhoto + 1} from ${activeGroup.title}`
+async function showPhoto(index, source) {
+  const request = ++photoRequest
+  const group = activeGroup
+  requestedPhoto = (index + group.photos.length) % group.photos.length
+  const nextPhoto = requestedPhoto
+  const photo = group.photos[nextPhoto]
+  const fullSource = new URL(photo.src, location.href).href
+  const image = new Image()
+  image.id = 'viewer-image'
+  image.width = photo.width
+  image.height = photo.height
+  image.alt = `Photograph ${nextPhoto + 1} from ${group.title}`
+  image.src = source === fullSource ? fullSource : photo.src.replace('/photos/', '/previews/')
+  try {
+    await image.decode()
+  } catch {
+    image.src = photo.src
+    try { await image.decode() } catch { return false }
+  }
+  if (request !== photoRequest || !collectionDialog.open) return false
+  transitions.finish()
+  viewerImage.replaceWith(image)
+  viewerImage = image
+  activePhoto = nextPhoto
   document.querySelector('#viewer-label').textContent = activeGroup.title.toUpperCase()
   document.querySelector('#viewer-count').textContent = `${String(activePhoto + 1).padStart(2, '0')} / ${String(activeGroup.photos.length).padStart(2, '0')}`
+  if (image.src !== fullSource) {
+    const fullImage = new Image()
+    fullImage.src = fullSource
+    fullImage.decode().then(() => {
+      if (request === photoRequest && viewerImage === image) image.src = photo.src
+    }).catch(() => {})
+  }
+  return true
 }
 function closeViewer(animate) {
+  photoRequest++
+  requestedPhoto = activePhoto
   transitions.finish()
   if (!viewer.open) return
   transitions.closePhoto(gallery.reveal(activePhoto), animate)
 }
 function closeCollection(animate) {
+  photoRequest++
   transitions.finish()
   collectionTransition?.progress(1)
   if (!collectionDialog.open) return
@@ -128,7 +161,7 @@ function closeCollection(animate) {
 }
 function navigatePhoto(direction) {
   transitions.finish()
-  if (viewer.open) showPhoto(activePhoto + direction)
+  if (viewer.open) showPhoto(requestedPhoto + direction)
 }
 collections.addEventListener('click', event => {
   const button = event.target.closest('[data-collection]')
