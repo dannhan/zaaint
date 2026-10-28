@@ -24,13 +24,11 @@ export function createGallery(root, { group, reduced, onOpen }) {
   let lastCardWidth = 0
   let lastCardHeight = 0
   let lastLayout = ''
+  const layoutSlot = root.closest('dialog').querySelector('.collection-layout-slot')
+  layoutSlot.innerHTML = `<div class="gallery-layouts" role="group" aria-label="Gallery arrangement">${arrangements.map(name => `<button type="button" class="mono" data-arrangement="${name}" aria-pressed="${name === arrangement}">${name}</button>`).join('')}</div>`
   root.innerHTML = `
-    <div class="gallery-toolbar">
-      <p class="mono">${group.type} / ${group.number}</p>
-      <div class="gallery-layouts" role="group" aria-label="Gallery arrangement">${arrangements.map(name => `<button type="button" class="mono" data-arrangement="${name}" aria-pressed="${name === arrangement}">${name}</button>`).join('')}</div>
-    </div>
     <div class="gallery-stage" tabindex="0" role="region" aria-label="${group.title} photographs. Use arrow keys to browse.">
-      ${group.photos.map((photo, i) => `<button type="button" class="gallery-photo" data-gallery-photo="${i}" aria-label="Open photograph ${i + 1} of ${group.photos.length}"><img draggable="false" src="${photo.src}" width="${photo.width}" height="${photo.height}" alt="" decoding="async" loading="${i < 4 || Math.abs(i - active) < 3 ? 'eager' : 'lazy'}"><span class="mono">${String(i + 1).padStart(2, '0')} / ${group.number}</span></button>`).join('')}
+      ${group.photos.map((photo, i) => `<button type="button" class="gallery-photo" data-gallery-photo="${i}" aria-label="Open photograph ${i + 1} of ${group.photos.length}"><img draggable="false" src="${photo.src}" width="${photo.width}" height="${photo.height}" alt="" decoding="async" loading="${i < 4 || Math.abs(i - active) < 3 ? 'eager' : 'lazy'}"></button>`).join('')}
     </div>
     <div class="gallery-footer mono"><span class="gallery-hint"></span><span class="gallery-position" role="status" aria-live="polite"></span><div class="gallery-navigation"><button type="button" data-step="-1" aria-label="Previous photograph">←</button><button type="button" data-step="1" aria-label="Next photograph">→</button></div></div>`
 
@@ -52,15 +50,15 @@ export function createGallery(root, { group, reduced, onOpen }) {
     const gap = width < 600 ? 14 : 28
     const photo = group.photos[active]
     const ratio = flat ? 0.8 : photo.width / photo.height
-    const availableImageHeight = Math.max(1, stage.clientHeight - 57)
-    const cardWidth = flat ? (width - gap * (columns - 1)) / columns : Math.min(width * (width < 600 ? 0.88 : 0.72), availableImageHeight * ratio)
+    const availableImageHeight = Math.max(1, stage.clientHeight - 24)
+    const cardWidth = flat ? (width - gap * (columns - 1)) / columns : Math.min(width * (width < 600 ? 0.96 : 0.8), availableImageHeight * ratio)
     const cardHeight = cardWidth / ratio
-    const height = flat ? Math.ceil(cards.length / columns) * (cardHeight + 38) : stage.clientHeight
+    const height = flat ? Math.ceil(cards.length / columns) * (cardHeight + gap) : stage.clientHeight
     const sizeChanged = cardWidth !== lastCardWidth || cardHeight !== lastCardHeight
     if (flat && stage.style.height !== `${height}px`) stage.style.height = `${height}px`
     const layoutKey = `${arrangement}:${flat}:${active}`
     if (layoutKey !== lastLayout) {
-      root.querySelectorAll('button[data-arrangement]').forEach(button => {
+      layoutSlot.querySelectorAll('button[data-arrangement]').forEach(button => {
         button.setAttribute('aria-pressed', String(button.dataset.arrangement === (flat ? 'grid' : arrangement)))
         button.disabled = reduced.matches && button.dataset.arrangement !== 'grid'
       })
@@ -87,14 +85,14 @@ export function createGallery(root, { group, reduced, onOpen }) {
     cards.forEach((card, i) => {
       const distance = i - active + (flat ? 0 : dragDistance / (cardWidth + gap))
       let x = width / 2 - cardWidth / 2
-      let y = (height - cardHeight - 25) / 2
+      let y = (height - cardHeight) / 2
       let z = 0
       let rotationY = 0
       let scale = 1
       let opacity = 1
       if (flat) {
         x = (i % columns) * (cardWidth + gap)
-        y = Math.floor(i / columns) * (cardHeight + 38)
+        y = Math.floor(i / columns) * (cardHeight + gap)
       } else if (arrangement === 'row') {
         x += distance * (cardWidth + gap)
         scale = 1 - 0.08 * Math.min(1, Math.abs(distance))
@@ -138,11 +136,11 @@ export function createGallery(root, { group, reduced, onOpen }) {
           const scaleX = gsap.getProperty(card, 'scaleX')
           const scaleY = gsap.getProperty(card, 'scaleY')
           card.style.width = `${cardWidth}px`
-          card.style.height = `${cardHeight + 25}px`
-          gsap.set(card, { scaleX: scaleX * lastCardWidth / cardWidth, scaleY: scaleY * (lastCardHeight + 25) / (cardHeight + 25) })
+          card.style.height = `${cardHeight}px`
+          gsap.set(card, { scaleX: scaleX * lastCardWidth / cardWidth, scaleY: scaleY * lastCardHeight / cardHeight })
         } else {
           card.style.width = `${cardWidth}px`
-          card.style.height = `${cardHeight + 25}px`
+          card.style.height = `${cardHeight}px`
         }
       }
       card.style.zIndex = String(Math.round(1000 + z - Math.abs(distance)))
@@ -192,6 +190,7 @@ export function createGallery(root, { group, reduced, onOpen }) {
   }
   const preventNativeDrag = event => event.preventDefault()
   root.addEventListener('click', onClick)
+  layoutSlot.addEventListener('click', onClick)
   stage.addEventListener('dragstart', preventNativeDrag)
   stage.addEventListener('keydown', onKeydown)
   const observer = Observer.create({
@@ -242,6 +241,7 @@ export function createGallery(root, { group, reduced, onOpen }) {
       reduced.removeEventListener('change', onReducedChange)
       gsap.killTweensOf(cards)
       root.removeEventListener('click', onClick)
+      layoutSlot.removeEventListener('click', onClick)
       stage.removeEventListener('keydown', onKeydown)
       stage.removeEventListener('dragstart', preventNativeDrag)
     },

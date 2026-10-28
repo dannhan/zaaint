@@ -43,7 +43,6 @@ function openCollection(index, button, animateEntry) {
   activeGroup = groups[index]
   document.querySelector('#collection-number').textContent = `(${activeGroup.number}) / ${activeGroup.type}`
   document.querySelector('#collection-title').textContent = activeGroup.title
-  document.querySelector('#collection-count').textContent = `${String(activeGroup.photos.length).padStart(2, '0')} PHOTOGRAPHS`
   collectionDialog.showModal()
   collectionDialog.scrollTop = 0
   lenis?.stop()
