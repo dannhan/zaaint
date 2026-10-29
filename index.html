@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#000000">
   <meta name="description" content="A selection of photographs by zaaint.">
+  <script>document.documentElement.classList.add('is-loading')</script>
+  <style>
+    html.is-loading { overflow: hidden; }
+    html.is-loading body > :not(.opening) { visibility: hidden; }
+    html:not(.is-loading) .opening:not(.is-revealing) { display: none; }
+    .opening { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: #fff; color: #000; }
+    .opening-name { font-size: clamp(90px, 18vw, 250px); font-weight: 700; letter-spacing: -.1em; line-height: 1; }
+    .opening-label { position: absolute; bottom: 28px; left: 3.2%; }
+    .opening-error { position: absolute; bottom: 60px; left: 3.2%; }
+    .opening-error button { border: 1px solid currentColor; padding: 8px 12px; background: transparent; cursor: pointer; }
+  </style>
   <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +23,11 @@
   <title>zaaint — photographs</title>
 </head>
 <body>
+  <div class="opening">
+    <span class="opening-name" aria-hidden="true">zaaint<span>.</span></span>
+    <span class="opening-label mono" role="status" aria-live="polite">LOADING PHOTOGRAPHS</span>
+    <div class="opening-error mono" hidden><span>Some photographs couldn't load.</span> <button type="button">TRY AGAIN</button></div>
+  </div>
   <header class="header" id="top">
     <a class="brand" href="#top" aria-label="zaaint, home">zaaint<span class="brand-dot">.</span></a>
     <span class="header-note">INDEPENDENT PHOTOGRAPHY<br>SELECTED WORKS</span>
@@ -45,6 +61,6 @@
     <div class="collection-dialog-inner"><div id="photo-grid" class="collection-gallery"></div></div>
   </dialog>
   <dialog id="viewer" class="viewer" data-lenis-prevent aria-label="Photograph viewer"><div class="viewer-surface" aria-hidden="true"></div><div class="viewer-bar mono"><span id="viewer-label"></span><button id="viewer-close" aria-label="Close photograph">CLOSE ×</button></div><div class="viewer-image-wrap"><img id="viewer-image" alt=""></div><div class="viewer-controls mono"><span id="viewer-count"></span><div><button id="viewer-prev" aria-label="Previous photograph">← PREV</button><button id="viewer-next" aria-label="Next photograph">NEXT →</button></div></div></dialog>
-  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/main.js" onerror="document.documentElement.classList.remove('is-loading')"></script>
 </body>
 </html>

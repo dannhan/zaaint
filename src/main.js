@@ -13,8 +13,8 @@ const groups = [
   { title: 'The players', arrangement: 'coverflow', type: 'PORTRAIT', cover: '7f9zc3p63qur.jpg', description: 'A series of portraits in the last light.' },
   { title: 'In the streets', arrangement: 'helix', type: 'DOCUMENTARY', cover: '993bsi5pyd3x.jpg', description: 'Scenes from a crowd in motion.' },
   { title: 'A portrait', arrangement: 'coverflow', type: 'PORTRAIT', cover: 'DZSNIX5D6-T.jpg', description: 'A person, a place, a moment.' },
-  { title: 'Elsewhere', arrangement: 'grid', type: 'PLACES', cover: 'DZH8U73iRxa-3.jpg', description: 'A collection of places and small things.' },
-  { title: 'After dark', arrangement: 'coverflow', type: 'LIVE MUSIC', cover: 'DSDL53pEmWl-13.jpg', description: 'On stage, in the light.' },
+  { title: 'Elsewhere', arrangement: 'coverflow', type: 'PLACES', cover: 'DZH8U73iRxa-3.jpg', description: 'A collection of places and small things.' },
+  { title: 'After dark', arrangement: 'grid', type: 'LIVE MUSIC', cover: 'DSDL53pEmWl-13.jpg', description: 'On stage, in the light.' },
 ].map((group, i) => ({ ...group, photos: photos[i], number: String(i + 1).padStart(2, '0') }))
 
 const collections = document.querySelector('#collections')
@@ -35,7 +35,7 @@ collections.innerHTML = groups.map((group, i) => {
   const cover = group.photos.find(photo => photo.original === group.cover) || group.photos[0]
   return `<article class="collection collection-${i + 1}" data-reveal>
     <button class="collection-button" data-collection="${i}" aria-label="Open ${group.title}, ${group.photos.length} photographs">
-      <span class="collection-image"><span class="collection-image-inner"><img src="${cover.src}" width="${cover.width}" height="${cover.height}" alt="" loading="lazy" decoding="async"></span><span class="image-action mono">VIEW SERIES ↗</span></span>
+      <span class="collection-image"><span class="collection-image-inner"><img src="${cover.src}" width="${cover.width}" height="${cover.height}" alt="" decoding="async"></span><span class="image-action mono">VIEW SERIES ↗</span></span>
       <span class="collection-meta mono"><span>(${group.number}) &nbsp; ${group.type}</span><span>${String(group.photos.length).padStart(2, '0')} FRAMES</span></span>
       <span class="collection-title"><span class="collection-name">${group.title}</span><span aria-hidden="true">↗</span></span>
     </button><p class="collection-description">${group.description}</p>
@@ -188,20 +188,44 @@ viewer.addEventListener('keydown', event => {
   if (event.key === 'ArrowRight') { event.preventDefault(); navigatePhoto(1) }
 })
 
+const opening = document.querySelector('.opening')
+const openingLabel = opening.querySelector('.opening-label')
+const openingError = opening.querySelector('.opening-error')
+const homeImages = [document.querySelector('.hero-image'), ...collections.querySelectorAll('img')]
+
+async function revealHome() {
+  openingError.hidden = true
+  openingLabel.textContent = 'LOADING PHOTOGRAPHS'
+  const results = await Promise.allSettled(homeImages.map(image => image.decode()))
+  if (results.some(result => result.status === 'rejected')) {
+    openingLabel.textContent = 'PLEASE TRY AGAIN'
+    openingError.hidden = false
+    return
+  }
+  if (reduced.matches) {
+    document.documentElement.classList.remove('is-loading')
+    opening.remove()
+    return
+  }
+  opening.classList.add('is-revealing')
+  gsap.to(opening, {
+    yPercent: -100, duration: 0.8, ease: 'power3.inOut',
+    onStart: () => document.documentElement.classList.remove('is-loading'),
+    onComplete: () => opening.remove(),
+  })
+  gsap.from('.hero-image-wrap', { opacity: 0, scale: 0.96, duration: 1.1, delay: 0.3, ease: 'power3.out' })
+  gsap.from('.hero-title-wrap > *', { opacity: 0, y: 30, duration: 0.9, delay: 0.3, stagger: 0.08, ease: 'power3.out' })
+}
+
+openingError.querySelector('button').addEventListener('click', () => {
+  homeImages.filter(image => !image.complete || !image.naturalWidth).forEach(image => { image.src = image.src })
+  revealHome()
+})
+
 if (!reduced.matches) {
   lenis = new Lenis({ autoRaf: true })
   lenis.on('scroll', ScrollTrigger.update)
-  const opening = document.createElement('div')
-  opening.className = 'opening'
-  opening.setAttribute('aria-hidden', 'true')
-  opening.innerHTML = '<span class="opening-name">zaaint<span>.</span></span><span class="opening-label mono">PHOTOGRAPHS / SELECTED WORKS</span>'
-  document.body.append(opening)
-  window.setTimeout(() => opening.remove(), 2500)
-  const entrance = gsap.timeline({ onComplete: () => opening.remove() })
-  entrance.from('.opening-name', { yPercent: 30, opacity: 0, duration: 0.5, ease: 'power3.out' })
-    .to(opening, { yPercent: -100, duration: 0.8, ease: 'power3.inOut', delay: 0.15 })
-    .from('.hero-image-wrap', { opacity: 0, scale: 0.96, duration: 1.1, ease: 'power3.out' }, '-=0.5')
-    .from('.hero-title-wrap > *', { opacity: 0, y: 30, duration: 0.9, stagger: 0.08, ease: 'power3.out' }, '-=0.8')
+  gsap.from('.opening-name', { yPercent: 30, opacity: 0, duration: 0.5, ease: 'power3.out' })
   gsap.utils.toArray('[data-reveal]').forEach(element => {
     gsap.from(element, { opacity: 0, y: 55, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: element, start: 'top 88%', once: true } })
     gsap.from(element.querySelector('.collection-image-inner'), { scale: 1.12, duration: 1.3, ease: 'power3.out', scrollTrigger: { trigger: element, start: 'top 88%', once: true } })
@@ -212,3 +236,5 @@ if (!reduced.matches) {
   gsap.to('.hero-image', { yPercent: 8, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
   gsap.to('.asterisk', { rotation: 100, ease: 'none', scrollTrigger: { trigger: '.statement', start: 'top bottom', end: 'bottom top', scrub: true } })
 }
+
+revealHome()
